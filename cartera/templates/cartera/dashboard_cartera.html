@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Resumen de Cartera Vencida</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+    th { background: #295087; color: #fff; }
+    .table-striped>tbody>tr:nth-of-type(odd)>* { background: #f0f4fa; }
+    .text-end { text-align: right; }
+    </style>
+</head>
+<body class="container mt-4">
+    <h1 class="mb-4 text-primary">Resumen de Cartera Vencida</h1>
+    <form method="get" class="row g-3 mb-3">
+        <div class="col-md-2">
+            <label for="fecha_corte" class="form-label">Fecha de Corte</label>
+            <input type="date" name="fecha_corte" id="fecha_corte" class="form-control"
+                required value="{{ fecha_corte }}">
+        </div>
+        <div class="col-md-3">
+            <label for="compania" class="form-label">Compañía</label>
+            <input type="text" name="compania" id="compania" class="form-control"
+                required value="{{ compania|default_if_none:'PAVILLION HOTELS GROUP SAS' }}">
+        </div>
+        <div class="col-md-3">
+            <label for="filtro" class="form-label">Buscar Cliente o NIT</label>
+            <input type="text" name="filtro" id="filtro" class="form-control"
+                value="{{ filtro }}">
+        </div>
+        <div class="col-md-2">
+            <label for="ordenar" class="form-label">Ordenar por</label>
+            <select class="form-select" name="ordenar" id="ordenar">
+                <option value="ValorTotal" {% if ordenar == 'ValorTotal' %}selected{% endif %}>Valor Total</option>
+                <option value="IDCLIPRV" {% if ordenar == 'IDCLIPRV' %}selected{% endif %}>NIT</option>
+                <option value="RAZONCIAL" {% if ordenar == 'RAZONCIAL' %}selected{% endif %}>Nombre</option>
+                <option value="DiasVencidos" {% if ordenar == 'DiasVencidos' %}selected{% endif %}>Días Vencidos</option>
+            </select>
+        </div>
+        <div class="col-md-2 align-self-end">
+            <button type="submit" class="btn btn-primary w-100">Consultar</button>
+        </div>
+    </form>
+
+    {% if error %}
+        <div class="alert alert-danger mt-2">{{ error }}</div>
+    {% endif %}
+
+    {% if page_obj %}
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered align-middle mt-3">
+                <thead>
+                    <tr>
+                        <th>NIT Cliente</th>
+                        <th>Nombre / Razón Social</th>
+                        <th class="text-end">Valor Total de Cartera</th>
+                        <th class="text-end">Días de Vencimiento (más antigua)</th>
+                        <th class="text-center">Ver Detalle</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for fila in page_obj %}
+                    <tr>
+                        <td>{{ fila.IDCLIPRV }}</td>
+                        <td>{{ fila.RAZONCIAL }}</td>
+                        <td class="text-end">{{ fila.ValorTotal|floatformat:2 }}</td>
+                        <td class="text-end">{{ fila.DiasVencidos }}</td>
+                        <td class="text-center">
+                            <a href="{% url 'detalle_cliente' %}?idcli={{ fila.IDCLIPRV }}&razon={{ fila.RAZONCIAL|urlencode }}&fecha_corte={{ fecha_corte }}&compania={{ compania|urlencode }}" class="btn btn-sm btn-info">Detalle</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5">No hay resultados para estos filtros.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- Paginación -->
+        <nav aria-label="Paginación">
+          <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+              <li class="page-item">
+                <a class="page-link"
+                   href="?fecha_corte={{ fecha_corte }}&compania={{ compania }}&filtro={{ filtro }}&ordenar={{ ordenar }}&page=1">Primera</a>
+              </li>
+              <li class="page-item">
+                <a class="page-link"
+                   href="?fecha_corte={{ fecha_corte }}&compania={{ compania }}&filtro={{ filtro }}&ordenar={{ ordenar }}&page={{ page_obj.previous_page_number }}">Anterior</a>
+              </li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link">Primera</span></li>
+              <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+            {% endif %}
+            <li class="page-item active"><span class="page-link">
+              Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+            </span></li>
+            {% if page_obj.has_next %}
+              <li class="page-item">
+                <a class="page-link"
+                   href="?fecha_corte={{ fecha_corte }}&compania={{ compania }}&filtro={{ filtro }}&ordenar={{ ordenar }}&page={{ page_obj.next_page_number }}">Siguiente</a>
+              </li>
+              <li class="page-item">
+                <a class="page-link"
+                   href="?fecha_corte={{ fecha_corte }}&compania={{ compania }}&filtro={{ filtro }}&ordenar={{ ordenar }}&page={{ page_obj.paginator.num_pages }}">Última</a>
+              </li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+              <li class="page-item disabled"><span class="page-link">Última</span></li>
+            {% endif %}
+          </ul>
+        </nav>
+    {% endif %}
+</body>
+</html>

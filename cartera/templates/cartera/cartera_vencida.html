@@ -1,0 +1,104 @@
+{% load dict_extras %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cartera Vencida</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+      th { background: #295087; color: #fff; }
+      td { vertical-align: middle; }
+      td.text-end { text-align: right; }
+      table { font-size: 0.95em; }
+      .table-striped>tbody>tr:nth-of-type(odd)>* { background: #f0f4fa; }
+    </style>
+</head>
+<body class="container mt-4">
+    <h1 class="mb-4 text-primary">Consulta Cartera Vencida</h1>
+    <form method="get" class="row g-3 mb-3">
+        <div class="col-md-3">
+            <label for="fecha_corte" class="form-label">Fecha de Corte</label>
+            <input type="date" name="fecha_corte" id="fecha_corte" class="form-control" required
+                value="{{ request.GET.fecha_corte }}">
+        </div>
+        <div class="col-md-5">
+            <label for="compania" class="form-label">Compañía</label>
+            <input type="text" name="compania" id="compania" class="form-control" required
+                value="{{ request.GET.compania|default_if_none:'PAVILLION HOTELS GROUP SAS' }}">
+        </div>
+        <div class="col-md-2 align-self-end">
+            <button type="submit" class="btn btn-primary">Consultar</button>
+        </div>
+    </form>
+
+    {% if error %}
+        <div class="alert alert-danger">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    {% if page_obj %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover table-striped align-middle">
+                <thead>
+                    <tr>
+                        {% for col_key, col_title in columnas_mostrar %}
+                            <th class="text-center">{{ col_title }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fila in page_obj %}
+                        <tr>
+                        {% for col_key, col_title in columnas_mostrar %}
+                            {# Numeros alineados a la derecha, textos a la izquierda #}
+                            {% if col_key|lower in "porvencer treinta sesenta noventa cientoochenta tressesenta masnoventa" %}
+                                <td class="text-end">{{ fila|get_item:col_key|floatformat:2 }}</td>
+                            {% else %}
+                                <td>{{ fila|get_item:col_key }}</td>
+                            {% endif %}
+                        {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- Paginación con filtros preservados -->
+        <nav aria-label="Paginación">
+          <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+              <li class="page-item">
+                <a class="page-link"
+                   href="?fecha_corte={{ request.GET.fecha_corte }}&compania={{ request.GET.compania }}&page=1">Primera</a>
+              </li>
+              <li class="page-item">
+                <a class="page-link"
+                   href="?fecha_corte={{ request.GET.fecha_corte }}&compania={{ request.GET.compania }}&page={{ page_obj.previous_page_number }}">Anterior</a>
+              </li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link">Primera</span></li>
+              <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+            {% endif %}
+
+            <li class="page-item active"><span class="page-link">
+              Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+            </span></li>
+
+            {% if page_obj.has_next %}
+              <li class="page-item">
+                <a class="page-link"
+                   href="?fecha_corte={{ request.GET.fecha_corte }}&compania={{ request.GET.compania }}&page={{ page_obj.next_page_number }}">Siguiente</a>
+              </li>
+              <li class="page-item">
+                <a class="page-link"
+                   href="?fecha_corte={{ request.GET.fecha_corte }}&compania={{ request.GET.compania }}&page={{ page_obj.paginator.num_pages }}">Última</a>
+              </li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+              <li class="page-item disabled"><span class="page-link">Última</span></li>
+            {% endif %}
+          </ul>
+        </nav>
+    {% endif %}
+</body>
+</html>

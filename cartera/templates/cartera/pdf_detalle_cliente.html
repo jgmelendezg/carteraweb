@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalle Cartera - PDF</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 10pt; }
+        h2, h3 { color: #295087; margin-bottom: 0.2em; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1.5px solid #295087; padding: 5px; }
+        th { background: #e4ecf7; }
+        td.text-end { text-align: right; }
+        tfoot td { font-weight: bold; background: #f2f7ff; }
+    </style>
+</head>
+<body>
+    <h2>Detalle de Cartera Vencida</h2>
+    <h3>{{ razon }} (NIT: {{ idcli }})</h3>
+    <h4>Fecha de Corte: {{ fecha_corte }} | Compañía: {{ compania }}</h4>
+    {% if resultados %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Factura</th>
+                    <th>Fecha</th>
+                    <th class="text-end">Por Vencer</th>
+                    <th class="text-end">+30d</th>
+                    <th class="text-end">+60d</th>
+                    <th class="text-end">+90d</th>
+                    <th class="text-end">+180d</th>
+                    <th class="text-end">+360d</th>
+                    <th class="text-end">+900d</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for fac in resultados %}
+                <tr>
+                    <td>{{ fac.NUMEFAC }}</td>
+                    <td>{{ fac.VENCFAC }}</td>
+                    <td class="text-end">{{ fac.PorVencer|floatformat:2 }}</td>
+                    <td class="text-end">{{ fac.Treinta|floatformat:2 }}</td>
+                    <td class="text-end">{{ fac.Sesenta|floatformat:2 }}</td>
+                    <td class="text-end">{{ fac.Noventa|floatformat:2 }}</td>
+                    <td class="text-end">{{ fac.CientoOchenta|floatformat:2 }}</td>
+                    <td class="text-end">{{ fac.TresSesenta|floatformat:2 }}</td>
+                    <td class="text-end">{{ fac.MasNoventa|floatformat:2 }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+            {% if resultados %}
+            <tfoot>
+                <tr>
+                    <td colspan="2" class="text-end">Totales</td>
+                    <td class="text-end">
+                        {{ resultados|sum:"PorVencer"|floatformat:2 }}
+                    </td>
+                    <td class="text-end">
+                        {{ resultados|sum:"Treinta"|floatformat:2 }}
+                    </td>
+                    <td class="text-end">
+                        {{ resultados|sum:"Sesenta"|floatformat:2 }}
+                    </td>
+                    <td class="text-end">
+                        {{ resultados|sum:"Noventa"|floatformat:2 }}
+                    </td>
+                    <td class="text-end">
+                        {{ resultados|sum:"CientoOchenta"|floatformat:2 }}
+                    </td>
+                    <td class="text-end">
+                        {{ resultados|sum:"TresSesenta"|floatformat:2 }}
+                    </td>
+                    <td class="text-end">
+                        {{ resultados|sum:"MasNoventa"|floatformat:2 }}
+                    </td>
+                </tr>
+            </tfoot>
+            {% endif %}
+        </table>
+    {% else %}
+        <p>No hay facturas para este cliente.</p>
+    {% endif %}
+</body>
+</html>
